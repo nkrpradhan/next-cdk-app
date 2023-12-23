@@ -1,16 +1,18 @@
-import * as cdk from 'aws-cdk-lib';
-import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import * as cdk from "aws-cdk-lib";
+import { Construct } from "constructs";
+import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as path from "path";
 
 export class NextCdkAppStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
-
-    // The code that defines your stack goes here
-
-    // example resource
-    // const queue = new sqs.Queue(this, 'NextCdkAppQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    const lambdaFn = new lambda.DockerImageFunction(this, "NextjsFunction", {
+      code: lambda.DockerImageCode.fromImageAsset(
+        path.join(__dirname, "..", "next-app")
+      ),
+    });
+    const fnUrl = lambdaFn.addFunctionUrl({
+      authType: lambda.FunctionUrlAuthType.NONE,
+    });
   }
 }
