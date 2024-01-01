@@ -26,10 +26,16 @@ const getBranchFromHeaders = (headers: CloudFrontHeaders) => {
   return null;
 };
 const getQuerystringValue = (querystring: string) => {
-  console.debug("getQuerystringValue query string: ", querystring);
+  console.debug(
+    "origin request getQuerystringValue query string: ",
+    querystring
+  );
   if (querystring.includes(FEATURE_BRANCH_IDENTIFIER)) {
     const branchName = querystring.split("=")[1];
-    console.debug("Found branch name in query string: ", branchName);
+    console.debug(
+      "origin request-- Found branch name in query string: ",
+      branchName
+    );
     return branchName;
   }
   return null;
@@ -40,11 +46,11 @@ export const handler = async (
   callback: CloudFrontRequestCallback
 ) => {
   const { request } = event.Records[0].cf;
-   const { headers, querystring } = request;
-   const requestCookies = headers.cookie;
-   const branchName = getQuerystringValue(querystring);
+  const { headers, querystring } = request;
+  console.debug("origin requestfn querystring", querystring);
+  const requestCookies = headers.cookie;
+  const branchName = getQuerystringValue(querystring);
   const requestHeaders = request.headers;
-
 
   if (!branchName) {
     console.debug("No branch name found in headers");
