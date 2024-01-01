@@ -37,7 +37,7 @@ export default function Home() {
           height={37}
           priority
         />
-        <div>feature page</div>
+        <div>main page</div>
       </div>
 
       <div className={styles.grid}>
