@@ -106,6 +106,7 @@ export class NextCdkAppStack extends cdk.Stack {
         parameterName: `/${appName}/distribution-domain-name`,
         stringValue: cf.distributionDomainName,
       });
+      new cdk.CfnOutput(this, "FunctionUrl", { value: fnUrl.url });
     }
   }
 }
