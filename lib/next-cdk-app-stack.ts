@@ -12,7 +12,7 @@ export class NextCdkAppStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
     const featureBranch = false;
-    const branchName = "main";
+    const branchName = "br111";
     const lambdaFnName = `NextjsFunction${branchName}`;
     const lambdaFn = new lambda.DockerImageFunction(this, lambdaFnName, {
       code: lambda.DockerImageCode.fromImageAsset(
@@ -66,60 +66,61 @@ export class NextCdkAppStack extends cdk.Stack {
     // );
 
     const myNextbucketOrigin = new origins.S3Origin(myNextbucket);
-    const viewerRequestFn = new cloudfront.experimental.EdgeFunction(
-      this,
-      "viewerRequestFn",
-      {
-        runtime: lambda.Runtime.NODEJS_18_X,
-        handler: "viewerRequest.handler",
-        code: lambda.Code.fromAsset(path.join(__dirname, "..", "edgelambda")),
-      }
-    );
-     const originRequestFn = new cloudfront.experimental.EdgeFunction(
-       this,
-       "originRequesFunc",
-       {
-         runtime: lambda.Runtime.NODEJS_18_X,
-         handler: "originRequest.handler",
-         code: lambda.Code.fromAsset(path.join(__dirname, "..", "edgelambda")),
-       }
-     );
-    if (branchName === "main") {
-      //cloudfront distribution with multiple origins
-      const cf = new cloudfront.Distribution(this, "myNextDist", {
-        defaultBehavior: {
-          origin: new origins.HttpOrigin(splitFunctionUrl),
-          edgeLambdas: [
-            {
-              functionVersion: originRequestFn.currentVersion,
-              eventType: cloudfront.LambdaEdgeEventType.ORIGIN_REQUEST,
-            },
-            {
-              functionVersion: viewerRequestFn.currentVersion,
-              eventType: cloudfront.LambdaEdgeEventType.VIEWER_REQUEST,
-            },
-          ],
-        },
-        additionalBehaviors: {
-          "/images/*": {
-            origin: myNextbucketOrigin,
-          },
-          "/_next/static/*/*": {
-            origin: myNextbucketOrigin,
-          },
-        },
-      });
-      const appName = "nxcdk";
-      new ssm.StringParameter(this, "DistributionId", {
-        parameterName: `/${appName}/distribution-id`,
-        stringValue: cf.distributionId,
-      });
+    new cdk.CfnOutput(this, "FunctionUrl", { value: fnUrl.url });
+    // const viewerRequestFn = new cloudfront.experimental.EdgeFunction(
+    //   this,
+    //   "viewerRequestFn",
+    //   {
+    //     runtime: lambda.Runtime.NODEJS_18_X,
+    //     handler: "viewerRequest.handler",
+    //     code: lambda.Code.fromAsset(path.join(__dirname, "..", "edgelambda")),
+    //   }
+    // );
+    //  const originRequestFn = new cloudfront.experimental.EdgeFunction(
+    //    this,
+    //    "originRequesFunc",
+    //    {
+    //      runtime: lambda.Runtime.NODEJS_18_X,
+    //      handler: "originRequest.handler",
+    //      code: lambda.Code.fromAsset(path.join(__dirname, "..", "edgelambda")),
+    //    }
+    //  );
+    // if (branchName === "main") {
+    //   //cloudfront distribution with multiple origins
+    //   const cf = new cloudfront.Distribution(this, "myNextDist", {
+    //     defaultBehavior: {
+    //       origin: new origins.HttpOrigin(splitFunctionUrl),
+    //       edgeLambdas: [
+    //         {
+    //           functionVersion: originRequestFn.currentVersion,
+    //           eventType: cloudfront.LambdaEdgeEventType.ORIGIN_REQUEST,
+    //         },
+    //         {
+    //           functionVersion: viewerRequestFn.currentVersion,
+    //           eventType: cloudfront.LambdaEdgeEventType.VIEWER_REQUEST,
+    //         },
+    //       ],
+    //     },
+    //     additionalBehaviors: {
+    //       "/images/*": {
+    //         origin: myNextbucketOrigin,
+    //       },
+    //       "/_next/static/*/*": {
+    //         origin: myNextbucketOrigin,
+    //       },
+    //     },
+    //   });
+    //   const appName = "nxcdk";
+    //   new ssm.StringParameter(this, "DistributionId", {
+    //     parameterName: `/${appName}/distribution-id`,
+    //     stringValue: cf.distributionId,
+    //   });
 
-      new ssm.StringParameter(this, "DistributionDomainName", {
-        parameterName: `/${appName}/distribution-domain-name`,
-        stringValue: cf.distributionDomainName,
-      });
-      new cdk.CfnOutput(this, "FunctionUrl", { value: fnUrl.url });
-    }
+    //   new ssm.StringParameter(this, "DistributionDomainName", {
+    //     parameterName: `/${appName}/distribution-domain-name`,
+    //     stringValue: cf.distributionDomainName,
+    //   });
+    //   new cdk.CfnOutput(this, "FunctionUrl", { value: fnUrl.url });
+    // }
   }
 }
