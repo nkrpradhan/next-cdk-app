@@ -75,12 +75,25 @@ export class NextCdkAppStack extends cdk.Stack {
         code: lambda.Code.fromAsset(path.join(__dirname, "..", "edgelambda")),
       }
     );
+     const originRequestFn = new cloudfront.experimental.EdgeFunction(
+       this,
+       "originRequesFunc",
+       {
+         runtime: lambda.Runtime.NODEJS_18_X,
+         handler: "originRequest.handler",
+         code: lambda.Code.fromAsset(path.join(__dirname, "..", "edgelambda")),
+       }
+     );
     if (branchName === "main") {
       //cloudfront distribution with multiple origins
       const cf = new cloudfront.Distribution(this, "myNextDist", {
         defaultBehavior: {
           origin: new origins.HttpOrigin(splitFunctionUrl),
           edgeLambdas: [
+            {
+              functionVersion: originRequestFn.currentVersion,
+              eventType: cloudfront.LambdaEdgeEventType.ORIGIN_REQUEST,
+            },
             {
               functionVersion: viewerRequestFn.currentVersion,
               eventType: cloudfront.LambdaEdgeEventType.VIEWER_REQUEST,

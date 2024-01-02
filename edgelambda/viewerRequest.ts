@@ -1,4 +1,9 @@
 import {
+  CloudFormationClient,
+  DescribeStacksCommand,
+  DescribeStacksCommandInput,
+} from "@aws-sdk/client-cloudformation";
+import {
   CloudFrontRequestCallback,
   CloudFrontRequestEvent,
   Context,
@@ -14,7 +19,7 @@ const allowedProjectPrefixes = new RegExp(
   ""
 );
 const FEATURE_BRANCH_IDENTIFIER = "featbr";
-
+const client = new CloudFormationClient({ region: "eu-west-1" });
 //if cookie contains SLF_MFE_BRANCH_NAME return its value
 const getCookieValue = (cookies: RequestCookies) => {
   console.debug("Req cookies-", cookies);
@@ -73,6 +78,45 @@ export const handler = async (
     });
     // Set featbr header
     headers["featbr"] = [{ key: "featbr", value: branchName }];
+    const input: DescribeStacksCommandInput = { StackName: branchName };
+    const command = new DescribeStacksCommand(input);
+    const response = await client.send(command);
+
+    if (!response.Stacks) {
+      console.error("No stacks found");
+      return callback(null, request);
+    }
+
+    console.debug("Found Stack!");
+    //Get Function Url form cloudformation outputs
+    const functionUrl = response.Stacks[0].Outputs?.find(
+      (o) => o.OutputKey === "FunctionUrl"
+    )?.OutputValue;
+
+    if (!functionUrl) {
+      console.error("No function url found in stack: ", branchName);
+      return callback(null, request);
+    }
+    const url = new URL(functionUrl);
+    const redirectResponse = {
+      status: "301",
+      statusDescription: "Moved Permanently",
+      headers: {
+        location: [
+          {
+            key: "Location",
+            value: "https://www.google.co.uk",
+          },
+        ],
+        "cache-control": [
+          {
+            key: "Cache-Control",
+            value: "max-age=3600",
+          },
+        ],
+      },
+    };
+    callback(null, redirectResponse);
   }
 
   console.debug("REQUEST HEADERS", headers);

@@ -48,45 +48,47 @@ export const handler = async (
   const { request } = event.Records[0].cf;
   const { headers, querystring } = request;
   console.debug("origin requestfn querystring", querystring);
+  console.debug("origin requestfn headers--", headers);
   const requestCookies = headers.cookie;
   const branchName = getQuerystringValue(querystring);
   const requestHeaders = request.headers;
+  console.debug("returning from origin requestfn");
+  return callback(null, request);
+  // if (!branchName) {
+  //   console.debug("No branch name found in headers");
+  //   return callback(null, request);
+  // }
 
-  if (!branchName) {
-    console.debug("No branch name found in headers");
-    return callback(null, request);
-  }
+  // try {
+  //   console.debug("Feature Branch Request detected: ", branchName);
+  //   //Then query cloudformation to find the stack and its outputs
+  //   const input: DescribeStacksCommandInput = { StackName: branchName };
+  //   const command = new DescribeStacksCommand(input);
+  //   const response = await client.send(command);
 
-  try {
-    console.debug("Feature Branch Request detected: ", branchName);
-    //Then query cloudformation to find the stack and its outputs
-    const input: DescribeStacksCommandInput = { StackName: branchName };
-    const command = new DescribeStacksCommand(input);
-    const response = await client.send(command);
+  //   if (!response.Stacks) {
+  //     console.error("No stacks found");
+  //     return callback(null, request);
+  //   }
 
-    if (!response.Stacks) {
-      console.error("No stacks found");
-      return callback(null, request);
-    }
+  //   console.debug("Found Stack!");
+  //   //Get Function Url form cloudformation outputs
+  //   const functionUrl = response.Stacks[0].Outputs?.find(
+  //     (o) => o.OutputKey === "FunctionUrl"
+  //   )?.OutputValue;
 
-    console.debug("Found Stack!");
-    //Get Function Url form cloudformation outputs
-    const functionUrl = response.Stacks[0].Outputs?.find(
-      (o) => o.OutputKey === "FunctionUrl"
-    )?.OutputValue;
+  //   if (!functionUrl) {
+  //     console.error("No function url found in stack: ", branchName);
+  //     return callback(null, request);
+  //   }
+  //   const url = new URL(functionUrl);
 
-    if (!functionUrl) {
-      console.error("No function url found in stack: ", branchName);
-      return callback(null, request);
-    }
-    const url = new URL(functionUrl);
+  //   request.headers["host"] = [{ key: "host", value: url.host }];
+  //   request.origin!.custom!.domainName = url.host;
 
-    request.headers["host"] = [{ key: "host", value: url.host }];
-    request.origin!.custom!.domainName = url.host;
-
-    return callback(null, request);
-  } catch (error) {
-    console.error("Error: ", error);
-    return callback(null, request);
-  }
+  //   return callback(null, request);
+  // } catch (error) {
+  //   console.error("Error: ", error);
+  //   return callback(null, request);
+  // }
 };
