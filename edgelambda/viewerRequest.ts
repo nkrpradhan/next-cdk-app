@@ -78,26 +78,28 @@ export const handler = async (
     });
     // Set featbr header
     headers["featbr"] = [{ key: "featbr", value: branchName }];
-    const input: DescribeStacksCommandInput = { StackName: branchName };
-    const command = new DescribeStacksCommand(input);
-    const response = await client.send(command);
+    // const input: DescribeStacksCommandInput = { StackName: branchName };
+    // const command = new DescribeStacksCommand(input);
+    // const response = await client.send(command);
 
-    if (!response.Stacks) {
-      console.error("No stacks found");
-      return callback(null, request);
-    }
+    // if (!response.Stacks) {
+    //   console.error("No stacks found");
+    //   return callback(null, request);
+    // }
 
-    console.debug("Found Stack!");
-    //Get Function Url form cloudformation outputs
-    const functionUrl = response.Stacks[0].Outputs?.find(
-      (o) => o.OutputKey === "FunctionUrl"
-    )?.OutputValue;
+    // console.debug("Found Stack!");
+    // //Get Function Url form cloudformation outputs
+    // const functionUrl = response.Stacks[0].Outputs?.find(
+    //   (o) => o.OutputKey === "FunctionUrl"
+    // )?.OutputValue;
 
-    if (!functionUrl) {
-      console.error("No function url found in stack: ", branchName);
-      return callback(null, request);
-    }
-    const url = new URL(functionUrl);
+    // if (!functionUrl) {
+    //   console.error("No function url found in stack: ", branchName);
+    //   return callback(null, request);
+    // }
+    const url = new URL(
+      "https://lw5hzidhqwap375kz5ch4w73ta0xzmhk.lambda-url.eu-west-1.on.aws"
+    );
     const redirectResponse = {
       status: "301",
       statusDescription: "Moved Permanently",
@@ -105,7 +107,8 @@ export const handler = async (
         location: [
           {
             key: "Location",
-            value: "https://www.google.co.uk",
+            value:
+              "https://lw5hzidhqwap375kz5ch4w73ta0xzmhk.lambda-url.eu-west-1.on.aws/",
           },
         ],
         "cache-control": [
@@ -116,7 +119,11 @@ export const handler = async (
         ],
       },
     };
-    callback(null, redirectResponse);
+    console.debug("change req uri");
+    request.uri =
+      "https://lw5hzidhqwap375kz5ch4w73ta0xzmhk.lambda-url.eu-west-1.on.aws";
+    request.headers["host"] = [{ key: "host", value: url.host }];
+    callback(null, request);
   }
 
   console.debug("REQUEST HEADERS", headers);
