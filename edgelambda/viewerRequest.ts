@@ -119,11 +119,11 @@ export const handler = async (
         ],
       },
     };
-    console.debug("change req uri");
-    request.uri =
-      "https://lw5hzidhqwap375kz5ch4w73ta0xzmhk.lambda-url.eu-west-1.on.aws";
-    request.headers["host"] = [{ key: "host", value: url.host }];
-    callback(null, request);
+    console.debug("change redirectResponse");
+    // request.uri =
+    //   "https://lw5hzidhqwap375kz5ch4w73ta0xzmhk.lambda-url.eu-west-1.on.aws";
+    // request.headers["host"] = [{ key: "host", value: url.host }];
+    callback(null, redirectResponse);
   }
 
   console.debug("REQUEST HEADERS", headers);
